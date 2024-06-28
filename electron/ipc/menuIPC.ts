@@ -1,13 +1,15 @@
-import { BrowserWindow, ipcMain, Menu, shell } from "electron";
+import { BrowserWindow, ipcMain, Menu, shell, app } from "electron";
 import Store from "electron-store";
 import { MenuChannels } from "../channels/menuChannels";
 import { IPC_EVENTS } from "../../src/lib/enums/ipc";
 import {
+  getCafAndOggFilePath,
   onStartRecording,
   onStopRecording,
 } from "../../src/utils/ipc/recording";
 import { IRecordingDataFromMain } from "../../src/types/recording";
 import { ISelectTagOption } from "../../src/types/meeting";
+import path from "path";
 
 const store = new Store();
 export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
@@ -101,8 +103,8 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
 
   // renderer to main
   ipcMain.on(IPC_EVENTS.RECORDING_ON, async () => {
-    addonInstance.startAudioControl();
-    addonInstance.startRecording("romeanoaddon.caf");
+    const filePath = getCafAndOggFilePath();
+    addonInstance.startRecording(path.join(filePath, "romeanoaddon.caf"));
     // onStartRecording();
   });
 

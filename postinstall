@@ -1,0 +1,10 @@
+#!/bin/bash
+################################################################################
+# (c) Copyright 2024-present DataBridge, Inc., All Rights Reserved.
+################################################################################
+
+# Causes the script to exit if any command fails
+set -e
+
+cp -r ./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioControl.framework ./node_modules/electron/dist/Electron.app/Contents/Frameworks/
+cp -r ./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/romeanoaddon.node ./node_modules/electron/dist/Electron.app/Contents/Frameworks/

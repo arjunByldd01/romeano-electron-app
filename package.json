@@ -6,7 +6,9 @@
     "dev": "vite",
     "build": "vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "sh ./postinstall"
+
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -23,8 +25,8 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
     "react-router-dom": "^6.23.0",
-    "romeano-package": "file:../romeano-package",
-    "tailwind-merge": "^2.2.2"
+    "tailwind-merge": "^2.2.2",
+    "@romeano/romeano-audio-library": "file:.."
   },
   "devDependencies": {
     "@types/react": "^18.2.64",
@@ -49,7 +51,7 @@
   },
   "main": "dist-electron/main.js",
   "build": {
-    "appId": "com.electron.electron-vite-project",
+    "appId": "com.romeano.macos",
     "directories": {
       "output": "out"
     },
@@ -73,11 +75,28 @@
       },
       "files": [
         "dist",
-        "dist-electron"
+        "dist-electron",
+        "node_modules/**/*",
+        "package.json",
+        "!node_modules/.cache",
+        "!build"
       ],
+      "extraFiles": [
+        {
+            "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioControl.framework",
+            "to": "Frameworks/RomeanoAudioControl.framework"
+        },
+        {
+            "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioDriver.driver",
+            "to": "Library/Audio/Plug-Ins/HAL/RomeanoAudioDriver.driver"
+        }
+    ],
      
       "entitlements": "./entitlements.mac.plist",
       "hardenedRuntime": true
-    }
+    },
+    "dmg": {
+      "sign": false
+  }
   }
 }

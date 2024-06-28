@@ -91,6 +91,9 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
     //   "Release/romeanoaddon.node"
     // )).RomeanoAddon;
     // addonInstance = new RomeanoAddon();
+    const RomeanoAddon = require("@romeano/romeano-audio-library/romeano-package");
+    addonInstance = new RomeanoAddon();
+    addonInstance.startAudioControl(0);
     registerMainIPC();
   });
 
@@ -138,8 +141,6 @@ function initializeTray(app: App) {
 
 // Toggle Window From Tray Icon
 function toggleTrayWindow() {
-  console.log("app path", app.getAppPath());
-  console.log("dirname", __dirname);
   if (appWindow) {
     positioner.position(appWindow, tray.getBounds());
 

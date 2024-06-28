@@ -168,7 +168,7 @@ function Home() {
       const startTime = new Date().getTime();
       const result: IGetSignedUrlResponse =
         await uploadRecordingMutation.mutateAsync({
-          fileName: data.fileName,
+          fileName: data?.fileName,
           startTime,
           userAPIKey,
         });
