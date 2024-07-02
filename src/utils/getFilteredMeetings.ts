@@ -1,5 +1,9 @@
+import { IpcRenderer } from "electron";
 import { type IMeeting } from "../types/meeting";
 import { type IApiError } from "./handleApiError";
+import { IPC_EVENTS } from "../lib/enums/ipc";
+const electron = window?.electron;
+const ipcRenderer: IpcRenderer = electron?.ipcRenderer;
 
 export const getFilteredMeetings = ({
   userMeetings,
@@ -37,6 +41,13 @@ export const getFilteredMeetings = ({
       }
     }
   });
+
+  ipcRenderer?.send(IPC_EVENTS.MEETINGS_FETCHED, [
+    // ...filteredPastMeetings,
+    ...filteredUpcomingMeetings,
+    // ...filteredActiveMeetings,
+  ]);
+
   return {
     filteredPastMeetings,
     filteredUpcomingMeetings,

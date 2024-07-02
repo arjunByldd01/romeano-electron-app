@@ -71,7 +71,6 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
       new Date().toLocaleString()
     );
   });
-  appWindow.webContents.openDevTools();
 
   if (VITE_DEV_SERVER_URL) {
     appWindow.loadURL(VITE_DEV_SERVER_URL);

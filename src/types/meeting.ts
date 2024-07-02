@@ -34,5 +34,7 @@ export interface IFetchMeetingContext {
   showMeetingLoader?: boolean;
   setShowMeetingLoader?: React.Dispatch<React.SetStateAction<boolean>>;
   spinTheRefetchIcon?: boolean;
+  isRefetching?: boolean;
   setSpinTheRefetchIcon?: React.Dispatch<React.SetStateAction<boolean>>;
+  refetchMeeting?: () => void;
 }

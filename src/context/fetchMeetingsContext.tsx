@@ -23,16 +23,19 @@ const FetchMeetingsContextProvider = ({
   const [showMeetingLoader, setShowMeetingLoader] = useState(false);
   const [spinTheRefetchIcon, setSpinTheRefetchIcon] = useState(false);
 
-  const { data, refetch, isFetched, error } = useFetchMeetings({
+  const { data, refetch, isFetched, error, isRefetching } = useFetchMeetings({
     userAPIKey: userAPIKeyContextState,
     setShowMeetingLoader,
     setSpinTheRefetchIcon,
   });
 
+  const refetchMeeting = () => {
+    refetch();
+  };
+
   const onRefetchMeeting = () => {
     setSpinTheRefetchIcon(true);
-
-    refetch();
+    refetchMeeting();
   };
 
   const onUserChange = (key: string) => {
@@ -55,6 +58,8 @@ const FetchMeetingsContextProvider = ({
     setShowMeetingLoader,
     spinTheRefetchIcon,
     setSpinTheRefetchIcon,
+    isRefetching,
+    refetchMeeting,
   };
   return (
     <FetchMeetingsContext.Provider value={contextValue}>

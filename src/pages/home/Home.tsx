@@ -40,6 +40,8 @@ function Home() {
     isFetched: isMeetingFetched,
     error: fetchMeetingError,
     showMeetingLoader,
+    refetchMeeting,
+    isRefetching: isRefetchingMeetings,
   } = useFetchMeetingsContext();
 
   const { recordingStatus, setRecordingStatus } = useRecordingContext();
@@ -84,13 +86,25 @@ function Home() {
       }
     );
 
+    ipcRenderer?.on(
+      IPC_EVENTS.AUTO_RECORDING_ON,
+      (event, data: ISelectTagOption[]) => {
+        setRecordingStatus(RECORDING_STATUS.ON);
+        refetchMeeting();
+      }
+    );
+
+    ipcRenderer?.on(
+      IPC_EVENTS.AUTO_RECORDING_OFF,
+      (event, data: IRecordingDataFromMain) => {
+        handleUploadRecording(data);
+        setRecordingStatus(RECORDING_STATUS.OFF);
+      }
+    );
+
     if (!userAPIKey) {
       navigate("/setup");
     }
-    return () => {
-      ipcRenderer?.removeAllListeners(IPC_EVENTS.UPLOAD_RECORDING);
-      ipcRenderer?.removeAllListeners(IPC_EVENTS.MIC_OPTIONS_FROM_MAIN);
-    };
   }, []);
 
   const {
@@ -102,7 +116,12 @@ function Home() {
       userMeetings: userMeetings?.events,
       fetchMeetingError: fetchMeetingError as IApiError,
     });
-  }, [isMeetingFetched, userMeetings?.events, fetchMeetingError]);
+  }, [
+    isMeetingFetched,
+    userMeetings?.events,
+    fetchMeetingError,
+    isRefetchingMeetings,
+  ]);
 
   useEffect(() => {
     let pageHeight = pageRef.current?.getBoundingClientRect()?.height;

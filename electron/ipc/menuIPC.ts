@@ -1,15 +1,14 @@
-import { BrowserWindow, ipcMain, Menu, shell, app } from "electron";
+import { BrowserWindow, ipcMain, Menu, shell } from "electron";
 import Store from "electron-store";
 import { MenuChannels } from "../channels/menuChannels";
 import { IPC_EVENTS } from "../../src/lib/enums/ipc";
 import {
   getCafAndOggFilePath,
-  onStartRecording,
   onStopRecording,
 } from "../../src/utils/ipc/recording";
-import { IRecordingDataFromMain } from "../../src/types/recording";
-import { ISelectTagOption } from "../../src/types/meeting";
+import { IMeeting, ISelectTagOption } from "../../src/types/meeting";
 import path from "path";
+import schedule from "node-schedule";
 
 const store = new Store();
 export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
@@ -126,6 +125,54 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
   ipcMain.on(IPC_EVENTS.MIC_CHANGED, async (event, value) => {
     console.log("Mic Changed", value);
   });
+
+  ipcMain.on(
+    IPC_EVENTS.MEETINGS_FETCHED,
+    async (event, meetings: IMeeting[]) => {
+      const scheduledJobs = schedule.scheduledJobs;
+
+      meetings.forEach((meeting) => {
+        const scheduledMeeting = Object.keys(scheduledJobs).map((jobName) => {
+          return jobName;
+        });
+        const startTime = meeting.start;
+        console.log(startTime);
+        const endTime = meeting.end;
+        console.log(endTime);
+
+        const jobName = `${meeting.id}-${meeting.summary}`;
+
+        if (!scheduledMeeting.includes(jobName)) {
+          schedule.scheduleJob(`${jobName}start`, startTime, async function () {
+            console.log("The world is going to end today.");
+            const filePath = getCafAndOggFilePath();
+            await addonInstance.startRecording(
+              path.join(filePath, "romeanoaddon.caf")
+            );
+            mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_ON);
+          });
+          schedule.scheduleJob(`${jobName}end`, endTime, async function () {
+            console.log("The world is going to end today.");
+            addonInstance.stopRecording();
+            addonInstance.stopAudioControl();
+            const dataToSend = await onStopRecording();
+            mainWindow.webContents.send(
+              IPC_EVENTS.AUTO_RECORDING_OFF,
+              dataToSend
+            );
+          });
+        }
+      });
+      Object.keys(scheduledJobs).forEach((ele) => {
+        const job = scheduledJobs[ele];
+        if (!job.nextInvocation()) {
+          console.log(job.name, "--");
+        }
+      });
+      // console.log(meetings.length);
+      console.log("----------");
+    }
+  );
 
   const micOptions: ISelectTagOption[] = [
     { name: "MacBook Pro Microphone", value: "macbookProMicrophone" },

@@ -22,36 +22,36 @@ const onStopRecording = async () => {
 
   try {
     // const cafFilePath = path.join(app.getAppPath(), "romeanoaddon.caf");
-    const cafFilePath = path.join(getCafAndOggFilePath(), "romeanoaddon.caf");
-    const outputFilePath = path.join(getCafAndOggFilePath(), "recording.ogg");
-    await convertCafToOgg(cafFilePath, outputFilePath);
+    // const cafFilePath = path.join(getCafAndOggFilePath(), "romeanoaddon.caf");
+    // const outputFilePath = path.join(getCafAndOggFilePath(), "recording.ogg");
+    // await convertCafToOgg(cafFilePath, outputFilePath);
     // const filePath = path.join(outputFilePath);
     // const fileData = fs.readFileSync(filePath);
     // fs.unlinkSync(filePath);
 
-    const desktopPath = app.getPath("desktop");
-    const destinationPath = path.join(desktopPath, "romeanoaddon.caf");
-    fs.copyFile(cafFilePath, destinationPath, (err) => {
-      if (err) {
-        console.error("Error copying file:", err);
-      } else {
-        console.log("File successfully copied to desktop!");
-      }
-    });
-    fs.unlink(cafFilePath, (err) => {
-      if (err) {
-        console.error("Error deleting file", err);
-      } else {
-        console.log("File successfully deleted");
-      }
-    });
-    fs.unlink(outputFilePath, (err) => {
-      if (err) {
-        console.error("Error deleting file", err);
-      } else {
-        console.log("File successfully deleted");
-      }
-    });
+    // const desktopPath = app.getPath("desktop");
+    // const destinationPath = path.join(desktopPath, "romeanoaddon.caf");
+    // fs.copyFile(cafFilePath, destinationPath, (err) => {
+    //   if (err) {
+    //     console.error("Error copying file:", err);
+    //   } else {
+    //     console.log("File successfully copied to desktop!");
+    //   }
+    // });
+    // fs.unlink(cafFilePath, (err) => {
+    //   if (err) {
+    //     console.error("Error deleting file", err);
+    //   } else {
+    //     console.log("File successfully deleted");
+    //   }
+    // });
+    // fs.unlink(outputFilePath, (err) => {
+    //   if (err) {
+    //     console.error("Error deleting file", err);
+    //   } else {
+    //     console.log("File successfully deleted");
+    //   }
+    // });
     return {
       fileData: "fileData",
       fileName: "recording.ogg",
@@ -105,4 +105,5 @@ const getCafAndOggFilePath = () => {
   // }
   return app.getPath("desktop");
 };
+
 export { onStartRecording, onStopRecording, getCafAndOggFilePath };
