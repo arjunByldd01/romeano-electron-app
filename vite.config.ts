@@ -29,23 +29,4 @@ export default defineConfig({
           : {},
     }),
   ],
-  // build: {
-  //   rollupOptions: {
-  //     // plugins: [nodeResolve(), commonjs()],
-  //     external: [
-  //       "Release", // Mark the .node file as external
-  //       // Add other native modules if necessary
-  //     ],
-  //     plugins: [
-  //       nodeResolve({
-  //         preferBuiltins: true,
-  //       }),
-  //     ],
-  //   },
-  // },
-  // resolve: {
-  //   alias: {
-  //     romeanoaddon: path.resolve(__dirname, "dist-electron/Release"),
-  //   },
-  // },
 });

@@ -7,7 +7,8 @@
     "build": "vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "postinstall": "sh ./postinstall"
+    "postinstall": "sh ./postinstall",
+    "make": "vite build && electron-builder -- --mac --universal"
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -26,6 +27,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
     "react-router-dom": "^6.23.0",
+    "sudo-prompt": "^9.2.1",
     "tailwind-merge": "^2.2.2"
   },
   "devDependencies": {
@@ -51,50 +53,61 @@
   },
   "main": "dist-electron/main.js",
   "build": {
-    "appId": "com.romeano.macos",
+    "appId": "com.audio.application",
+    "npmRebuild": false,
+    "productName": "Romeano",
+    "files": [
+      "node_modules/**/*",
+      "dist",
+      "dist-electron",
+      "package.json",
+      "index.html",
+      "!node_modules/.cache"
+    ],
+    "extraFiles": [
+      {
+        "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioControl.framework",
+        "to": "Frameworks/RomeanoAudioControl.framework"
+      },
+      {
+        "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioDriver.driver",
+        "to": "/Library/Audio/Plug-Ins/HAL/RomeanoAudioDriver.driver"
+      }
+      
+    ],
+    "extraResources": [
+      {
+        "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioDriver.driver",
+        "to": "AudioDriver",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "copyright": "Copyright © 2020 Audio Corp",
+    "mac": {
+      "category": "com.audio.application",
+      "target": [
+        "pkg"
+      ],
+      "icon": "./public/assets/icons/romeano.icns",
+      "identity": "identity",
+      "darkModeSupport": true,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "pkg": {
+      "scripts": "./Scripts",
+      "installLocation": "/Applications",
+      "allowAnywhere": true,
+      "allowCurrentUserHome": true,
+      "allowRootDirectory": true,
+      "isVersionChecked": true,
+      "isRelocatable": false,
+      "overwriteAction": "upgrade"
+    },
     "directories": {
       "output": "out"
-    },
-    "mac": {
-      "icon": "./public/assets/icons/romeano.icns",
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "extendInfo": {
-        "LSApplicationCategoryType": "public.app-category.utilities",
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true
-        }
-      },
-      "files": [
-        "dist",
-        "dist-electron",
-        "node_modules/**/*",
-        "package.json",
-        "!node_modules/.cache",
-        "!build"
-      ],
-      "extraFiles": [
-        {
-          "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioControl.framework",
-          "to": "Frameworks/RomeanoAudioControl.framework"
-        },
-        {
-          "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioDriver.driver",
-          "to": "Library/Audio/Plug-Ins/HAL/RomeanoAudioDriver.driver"
-        }
-      ],
-      "entitlements": "./entitlements.mac.plist",
-      "hardenedRuntime": true
-    },
-    "dmg": {
-      "sign": false
     }
   }
 }

@@ -1,11 +1,4 @@
-import {
-  type App,
-  BrowserWindow,
-  Tray,
-  nativeImage,
-  Menu,
-  app,
-} from "electron";
+import { type App, BrowserWindow, Tray, nativeImage, Menu } from "electron";
 import windowStateKeeper from "electron-window-state";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +8,7 @@ import { getcontextMenu } from "./menu/contextMenu";
 import { registerMenuIpc } from "./ipc/menuIPC";
 import { registerWindowStateChangedEvents } from "./windowState";
 import { createRequire } from "node:module";
-
+import { copyAudioDriver } from "./utils/copyAudioDriver";
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -85,17 +78,13 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
   initializeTray(app);
 
   appWindow.webContents.once("dom-ready", () => {
-    // const RomeanoAddon = require(path.join(
-    //   __dirname,
-    //   "Release/romeanoaddon.node"
-    // )).RomeanoAddon;
-    // addonInstance = new RomeanoAddon();
     const RomeanoAddon = require("@romeano/romeano-audio-library/romeano-package");
     addonInstance = new RomeanoAddon();
-    addonInstance.startAudioControl(0);
+
     registerMainIPC();
   });
 
+  copyAudioDriver(app);
   savedWindowState.manage(appWindow);
 
   appWindow.on("close", () => {

@@ -101,9 +101,10 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
   //IPC Event for recording
 
   // renderer to main
-  ipcMain.on(IPC_EVENTS.RECORDING_ON, async () => {
+  ipcMain.on(IPC_EVENTS.RECORDING_ON, async (event, fileName) => {
+    await addonInstance.startAudioControl(0);
     const filePath = getCafAndOggFilePath();
-    addonInstance.startRecording(path.join(filePath, "romeanoaddon.caf"));
+    await addonInstance.startRecording(path.join(filePath, fileName));
     // onStartRecording();
   });
 
@@ -136,23 +137,28 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
           return jobName;
         });
         const startTime = meeting.start;
-        console.log(startTime);
         const endTime = meeting.end;
-        console.log(endTime);
 
-        const jobName = `${meeting.id}-${meeting.summary}`;
+        const startJobName = `${meeting.id}-${meeting.start}`;
+        const endJobName = `${meeting.id}-${meeting.end}`;
 
-        if (!scheduledMeeting.includes(jobName)) {
-          schedule.scheduleJob(`${jobName}start`, startTime, async function () {
-            console.log("The world is going to end today.");
-            const filePath = getCafAndOggFilePath();
-            await addonInstance.startRecording(
-              path.join(filePath, "romeanoaddon.caf")
-            );
-            mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_ON);
-          });
-          schedule.scheduleJob(`${jobName}end`, endTime, async function () {
-            console.log("The world is going to end today.");
+        const recordingFileName = `${meeting.summary}-recording.caf`;
+        if (!scheduledMeeting.includes(startJobName)) {
+          schedule.scheduleJob(
+            `${startJobName}start`,
+            startTime,
+            async function () {
+              await addonInstance.startAudioControl(0);
+              const filePath = getCafAndOggFilePath();
+              await addonInstance.startRecording(
+                path.join(filePath, recordingFileName)
+              );
+              mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_ON);
+            }
+          );
+        }
+        if (!scheduledMeeting.includes(endJobName)) {
+          schedule.scheduleJob(`${endJobName}end`, endTime, async function () {
             addonInstance.stopRecording();
             addonInstance.stopAudioControl();
             const dataToSend = await onStopRecording();
@@ -163,14 +169,6 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
           });
         }
       });
-      Object.keys(scheduledJobs).forEach((ele) => {
-        const job = scheduledJobs[ele];
-        if (!job.nextInvocation()) {
-          console.log(job.name, "--");
-        }
-      });
-      // console.log(meetings.length);
-      console.log("----------");
     }
   );
 

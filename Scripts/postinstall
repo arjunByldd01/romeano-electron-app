@@ -1,0 +1,24 @@
+#!/bin/bash
+################################################################################
+# (c) Copyright 2024-present DataBridge, Inc., All Rights Reserved.
+################################################################################
+
+
+
+APP_RESOURCES_DIR="$3/Contents/Resources"
+SOURCE_DIR="$APP_RESOURCES_DIR/AudioDriver"
+DEST_DIR="/Library/Audio/Plug-Ins/HAL/RomeanoAudioDriver.driver"
+
+
+if [ ! -d "$SOURCE_DIR" ]; then
+  echo "Source directory $SOURCE_DIR does not exist."
+  exit 1
+fi
+
+
+sudo mkdir -p "/Library/Audio/Plug-Ins/HAL"
+
+
+sudo cp -R "$SOURCE_DIR" "$DEST_DIR"
+
+echo "RomeanoAudioDriver.driver copied successfully!"

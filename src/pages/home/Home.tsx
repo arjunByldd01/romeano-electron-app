@@ -99,6 +99,7 @@ function Home() {
       (event, data: IRecordingDataFromMain) => {
         handleUploadRecording(data);
         setRecordingStatus(RECORDING_STATUS.OFF);
+        refetchMeeting();
       }
     );
 
@@ -145,6 +146,11 @@ function Home() {
   };
 
   const toggleRecording = () => {
+    const activeMeetingName =
+      filteredActiveMeetings.length > 0
+        ? `${filteredActiveMeetings[0].summary}.caf`
+        : null;
+    console.log(activeMeetingName);
     if (
       recordingStatus == RECORDING_STATUS.ON &&
       filteredActiveMeetings.length
@@ -172,8 +178,9 @@ function Home() {
     ) {
       ipcRenderer?.send(IPC_EVENTS.RECORDING_OFF);
       setRecordingStatus(RECORDING_STATUS.OFF);
-    } else {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_ON);
+    } else if (activeMeetingName) {
+      console.log("object");
+      ipcRenderer?.send(IPC_EVENTS.RECORDING_ON, activeMeetingName);
       setRecordingStatus(RECORDING_STATUS.ON);
     }
   };
