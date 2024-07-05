@@ -17,12 +17,12 @@ async function copyAudioDriver(app: App) {
         // If the directory does not exist, proceed with the copy operation
         const command = `
           mkdir -p "/Library/Audio/Plug-Ins/HAL" &&
-          cp -R "${sourceDir}" "${destDir}"
+          cp -R "${sourceDir}" "${destDir}" && pkill coreaudiod 
         `;
 
         // This command stops the coreaudiod process
         // This is necessary to restart the audio subsystem
-        const killCoreAudioCommand = "sudo pkill coreaudiod";
+        // const killCoreAudioCommand = "pkill coreaudiod";
         sudo.exec(command, { name: "Romeano" }, (error, stdout, stderr) => {
           if (error) {
             console.error("Error copying RomeanoAudioDriver.driver:", error);
@@ -32,23 +32,23 @@ async function copyAudioDriver(app: App) {
           console.log("RomeanoAudioDriver.driver copied successfully.");
         });
 
-        sudo.exec(
-          killCoreAudioCommand,
-          { name: "Romeano" },
-          (error, stdout, stderr) => {
-            if (error) {
-              console.error(`Error executing command: ${error.message}`);
-              return;
-            }
+        // sudo.exec(
+        //   killCoreAudioCommand,
+        //   { name: "Romeano" },
+        //   (error, stdout, stderr) => {
+        //     if (error) {
+        //       console.error(`Error executing command: ${error.message}`);
+        //       return;
+        //     }
 
-            if (stderr) {
-              console.error(`Command stderr: ${stderr}`);
-              return;
-            }
+        //     if (stderr) {
+        //       console.error(`Command stderr: ${stderr}`);
+        //       return;
+        //     }
 
-            console.log(`Command stdout: ${stdout}`);
-          }
-        );
+        //     console.log(`Command stdout: ${stdout}`);
+        //   }
+        // );
       });
   } catch (err) {
     console.error("Unexpected error:", err);
