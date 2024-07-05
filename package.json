@@ -53,7 +53,7 @@
   },
   "main": "dist-electron/main.js",
   "build": {
-    "appId": "com.audio.application",
+    "appId": "com.romeano.macos",
     "npmRebuild": false,
     "productName": "Romeano",
     "files": [
@@ -68,10 +68,6 @@
       {
         "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioControl.framework",
         "to": "Frameworks/RomeanoAudioControl.framework"
-      },
-      {
-        "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioDriver.driver",
-        "to": "/Library/Audio/Plug-Ins/HAL/RomeanoAudioDriver.driver"
       }
       
     ],
@@ -88,13 +84,19 @@
     "mac": {
       "category": "com.audio.application",
       "target": [
-        "pkg"
+        "pkg","dmg"
       ],
+      "extendInfo": {
+        "LSApplicationCategoryType": "public.app-category.utilities",
+        "NSAppTransportSecurity": {
+            "NSAllowsArbitraryLoads": true
+        }
+    },
       "icon": "./public/assets/icons/romeano.icns",
-      "identity": "identity",
-      "darkModeSupport": true,
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+     
+      
+    "entitlements": "./entitlements.mac.plist"
     },
     "pkg": {
       "scripts": "./Scripts",
@@ -106,6 +108,11 @@
       "isRelocatable": false,
       "overwriteAction": "upgrade"
     },
+
+   "dmg":{
+   
+    "sign": true
+   },
     "directories": {
       "output": "out"
     }

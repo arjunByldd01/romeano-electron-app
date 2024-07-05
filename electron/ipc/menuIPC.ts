@@ -118,7 +118,7 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
   });
   ipcMain.on(IPC_EVENTS.RECORDING_OFF, async (event) => {
     addonInstance.stopRecording();
-    addonInstance.stopAudioControl();
+    // addonInstance.stopAudioControl();
     const dataToSend = await onStopRecording();
     event.reply(IPC_EVENTS.UPLOAD_RECORDING, dataToSend);
   });
@@ -128,7 +128,7 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
   });
 
   ipcMain.on(
-    IPC_EVENTS.MEETINGS_FETCHED,
+    IPC_EVENTS.SCHEDULE_RECORDING_TASK,
     async (event, meetings: IMeeting[]) => {
       const scheduledJobs = schedule.scheduledJobs;
 
@@ -160,7 +160,7 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
         if (!scheduledMeeting.includes(endJobName)) {
           schedule.scheduleJob(`${endJobName}end`, endTime, async function () {
             addonInstance.stopRecording();
-            addonInstance.stopAudioControl();
+            // addonInstance.stopAudioControl();
             const dataToSend = await onStopRecording();
             mainWindow.webContents.send(
               IPC_EVENTS.AUTO_RECORDING_OFF,
@@ -168,6 +168,29 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
             );
           });
         }
+      });
+    }
+  );
+
+  ipcMain.on(
+    IPC_EVENTS.RECORDING_ACTIVE_MEETING_ON_OPEN_APP,
+    async (event, activeMeeting: IMeeting) => {
+      const recordingFileName = `${activeMeeting.summary}-recording.caf`;
+      await addonInstance.startAudioControl(0);
+      const filePath = getCafAndOggFilePath();
+      await addonInstance.startRecording(
+        path.join(filePath, recordingFileName)
+      );
+      mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_ON);
+
+      const endTime = activeMeeting.end;
+      const endJobName = `${activeMeeting.id}-${activeMeeting.end}`;
+
+      schedule.scheduleJob(`${endJobName}end`, endTime, async function () {
+        addonInstance.stopRecording();
+        // addonInstance.stopAudioControl();
+        const dataToSend = await onStopRecording();
+        mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_OFF, dataToSend);
       });
     }
   );

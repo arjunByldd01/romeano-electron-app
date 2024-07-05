@@ -116,6 +116,7 @@ function Home() {
     return getFilteredMeetings({
       userMeetings: userMeetings?.events,
       fetchMeetingError: fetchMeetingError as IApiError,
+      recordingStatus,
     });
   }, [
     isMeetingFetched,
