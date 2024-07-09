@@ -11,6 +11,8 @@ import { createRequire } from "node:module";
 import { copyAudioDriver } from "./utils/copyAudioDriver";
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import Store from "electron-store";
+import { ELECTRON_STORE_KEY } from "../src/lib/enums/user";
 
 let appWindow: BrowserWindow | null;
 let tray: Tray;
@@ -32,6 +34,7 @@ const minHeight = 456;
 const maxHeight = 510;
 
 export function createWindow({ app }: { app: App }): BrowserWindow {
+  const store = new Store();
   const savedWindowState = windowStateKeeper({
     defaultWidth: minWidth,
     defaultHeight: minHeight,
@@ -84,14 +87,16 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
     registerMainIPC();
   });
 
-  copyAudioDriver(app);
+  copyAudioDriver({
+    app,
+    userApiKey: store.get(ELECTRON_STORE_KEY.USER_API_KEY) as string,
+    onAppQuite,
+    appWindow,
+  });
   savedWindowState.manage(appWindow);
 
   appWindow.on("close", () => {
-    addonInstance.stopAudioControl();
-    appWindow = null;
-    app.quit();
-    tray.destroy();
+    onAppQuite(app);
   });
   return appWindow;
 }
@@ -125,6 +130,13 @@ function initializeTray(app: App) {
     tray.popUpContextMenu(contextMenu);
   });
   tray.setToolTip("Romeano");
+}
+
+function onAppQuite(app: App) {
+  addonInstance?.stopAudioControl();
+  appWindow = null;
+  app.quit();
+  tray.destroy();
 }
 
 // Toggle Window From Tray Icon

@@ -10,6 +10,9 @@ export enum IPC_EVENTS {
   SCHEDULE_RECORDING_TASK = "SCHEDULE_RECORDING_TASK", //to schedule auto-recording on and off task when meetings are fetched
   RECORDING_ACTIVE_MEETING_ON_OPEN_APP = "RECORDING_ACTIVE_MEETING_ON_OPEN_APP",
 
+  //audio driver copied
+  AUDIO_DROVER_COPY = "AUDIO_DROVER_COPY",
+
   // audio and recording
   MIC_CHANGED = "micChanged",
   MIC_OPTIONS_FROM_MAIN = "micOptionsFromMain",

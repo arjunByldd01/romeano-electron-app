@@ -103,6 +103,10 @@ function Home() {
       }
     );
 
+    ipcRenderer?.on(IPC_EVENTS.AUDIO_DROVER_COPY, () => {
+      refetchMeeting();
+    });
+
     if (!userAPIKey) {
       navigate("/setup");
     }

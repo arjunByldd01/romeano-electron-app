@@ -1,9 +1,20 @@
 import sudo from "sudo-prompt";
 import fs from "fs";
 import path from "node:path";
-import { type App } from "electron";
+import { BrowserWindow, type App } from "electron";
+import { IPC_EVENTS } from "../../src/lib/enums/ipc";
 
-async function copyAudioDriver(app: App) {
+async function copyAudioDriver({
+  app,
+  userApiKey,
+  onAppQuite,
+  appWindow,
+}: {
+  app: App;
+  userApiKey: string | undefined;
+  onAppQuite: (app: App) => void;
+  appWindow: BrowserWindow;
+}) {
   const sourceDir = getDriverSourceDir(app);
   const destDir = "/Library/Audio/Plug-Ins/HAL/RomeanoAudioDriver.driver";
 
@@ -11,7 +22,7 @@ async function copyAudioDriver(app: App) {
     await fs.promises
       .access(destDir, fs.constants.F_OK)
       .then(() => {
-        console.log("RomeanoAudioDriver.driver already exists. Skipping copy.");
+        // we do not copy if already driver is already available in HAL folder
       })
       .catch(async () => {
         // If the directory does not exist, proceed with the copy operation
@@ -20,35 +31,22 @@ async function copyAudioDriver(app: App) {
           cp -R "${sourceDir}" "${destDir}" && pkill coreaudiod 
         `;
 
-        // This command stops the coreaudiod process
-        // This is necessary to restart the audio subsystem
-        // const killCoreAudioCommand = "pkill coreaudiod";
         sudo.exec(command, { name: "Romeano" }, (error, stdout, stderr) => {
           if (error) {
-            console.error("Error copying RomeanoAudioDriver.driver:", error);
+            //error can be ocurred if user does not enter password
+            onAppQuite(app);
             return;
           }
 
-          console.log("RomeanoAudioDriver.driver copied successfully.");
+          /**
+           * Description: IF user API key was available which means app will start from home page,
+           * and if there is an active meeting available at that moment we have to refetch meetings.
+           * And then, audioDriver will also available and it start recording automatically for that active meeting
+           */
+          if (userApiKey) {
+            appWindow.webContents.send(IPC_EVENTS.AUDIO_DROVER_COPY);
+          }
         });
-
-        // sudo.exec(
-        //   killCoreAudioCommand,
-        //   { name: "Romeano" },
-        //   (error, stdout, stderr) => {
-        //     if (error) {
-        //       console.error(`Error executing command: ${error.message}`);
-        //       return;
-        //     }
-
-        //     if (stderr) {
-        //       console.error(`Command stderr: ${stderr}`);
-        //       return;
-        //     }
-
-        //     console.log(`Command stdout: ${stdout}`);
-        //   }
-        // );
       });
   } catch (err) {
     console.error("Unexpected error:", err);
