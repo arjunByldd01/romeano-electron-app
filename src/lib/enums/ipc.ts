@@ -8,7 +8,7 @@ export enum IPC_EVENTS {
   ELECTRON_STORE_DELETE = "electron-store-delete",
 
   SCHEDULE_RECORDING_TASK = "SCHEDULE_RECORDING_TASK", //to schedule auto-recording on and off task when meetings are fetched
-  RECORDING_ACTIVE_MEETING_ON_OPEN_APP = "RECORDING_ACTIVE_MEETING_ON_OPEN_APP",
+  RECORD_ACTIVE_MEETING_ON_OPEN_APP = "RECORD_ACTIVE_MEETING_ON_OPEN_APP",
 
   //audio driver copied
   AUDIO_DROVER_COPY = "AUDIO_DROVER_COPY",

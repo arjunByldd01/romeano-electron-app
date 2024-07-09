@@ -56,7 +56,7 @@ export const getFilteredMeetings = ({
     recordingStatus == RECORDING_STATUS.OFF
   ) {
     ipcRenderer?.send(
-      IPC_EVENTS.RECORDING_ACTIVE_MEETING_ON_OPEN_APP,
+      IPC_EVENTS.RECORD_ACTIVE_MEETING_ON_OPEN_APP,
       filteredActiveMeetings[0]
     );
   }

@@ -53,6 +53,7 @@
   },
   "main": "dist-electron/main.js",
   "build": {
+    
     "appId": "com.romeano.macos",
     "npmRebuild": false,
     "productName": "Romeano",
@@ -69,12 +70,19 @@
         "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioControl.framework",
         "to": "Frameworks/RomeanoAudioControl.framework"
       }
-      
     ],
     "extraResources": [
       {
         "from": "./node_modules/@romeano/romeano-audio-library/romeano-package/out/Release/RomeanoAudioDriver.driver",
         "to": "AudioDriver",
+        "filter": [
+          "**/*"
+        ]
+      },
+     
+      {
+        "from": "node_modules/ffmpeg-static/ffmpeg",
+        "to": "ffmpeg",
         "filter": [
           "**/*"
         ]

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { HiSpeakerWave } from "react-icons/hi2";
 import { type IpcRenderer } from "electron";
 import { useMutation } from "@tanstack/react-query";
-import { CustomDropDown } from "../../components/common/DropDown";
+import { MicAndSpeakerDropDown } from "../../components/common/DropDown";
 import Toggle from "../../components/common/toggle";
 import { IApiError, handleApiError } from "../../utils/handleApiError";
 import Meetings from "../../components/homePage/Meetings";
@@ -29,6 +29,7 @@ import { useFetchMeetingsContext } from "../../context/fetchMeetingsContext";
 import { RECORDING_STATUS } from "../../lib/enums/meeting";
 import RecordingStatus from "../../components/homePage/RecordingStatus";
 import { useRecordingContext } from "../../context/recordingContext";
+import { acceptIpcEventFromMain } from "../../utils/ipc";
 
 const electron = window?.electron;
 const ipcRenderer: IpcRenderer = electron?.ipcRenderer;
@@ -72,39 +73,11 @@ function Home() {
   });
 
   useEffect(() => {
-    ipcRenderer?.on(
-      IPC_EVENTS.UPLOAD_RECORDING,
-      (event, data: IRecordingDataFromMain) => {
-        handleUploadRecording(data);
-      }
-    );
-
-    ipcRenderer?.on(
-      IPC_EVENTS.MIC_OPTIONS_FROM_MAIN,
-      (event, data: ISelectTagOption[]) => {
-        setMicOptions(data);
-      }
-    );
-
-    ipcRenderer?.on(
-      IPC_EVENTS.AUTO_RECORDING_ON,
-      (event, data: ISelectTagOption[]) => {
-        setRecordingStatus(RECORDING_STATUS.ON);
-        refetchMeeting();
-      }
-    );
-
-    ipcRenderer?.on(
-      IPC_EVENTS.AUTO_RECORDING_OFF,
-      (event, data: IRecordingDataFromMain) => {
-        handleUploadRecording(data);
-        setRecordingStatus(RECORDING_STATUS.OFF);
-        refetchMeeting();
-      }
-    );
-
-    ipcRenderer?.on(IPC_EVENTS.AUDIO_DROVER_COPY, () => {
-      refetchMeeting();
+    acceptIpcEventFromMain({
+      handleUploadRecording,
+      refetchMeeting,
+      setMicOptions,
+      setRecordingStatus,
     });
 
     if (!userAPIKey) {
@@ -151,41 +124,16 @@ function Home() {
   };
 
   const toggleRecording = () => {
-    const activeMeetingName =
+    const meetingName =
       filteredActiveMeetings.length > 0
-        ? `${filteredActiveMeetings[0].summary}.caf`
-        : null;
-    console.log(activeMeetingName);
-    if (
-      recordingStatus == RECORDING_STATUS.ON &&
-      filteredActiveMeetings.length
-    ) {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_PAUSE);
-      setRecordingStatus(RECORDING_STATUS.PAUSE);
+        ? `${filteredActiveMeetings[0].summary}-${Date.now()}.caf`
+        : `romeano-recording-${Date.now()}.caf`;
 
-      // ipcRenderer?.send(IPC_EVENTS.RECORDING_OFF);
-      // setRecordingStatus(RECORDING_STATUS.OFF);
-    } else if (
-      recordingStatus == RECORDING_STATUS.ON &&
-      !filteredActiveMeetings.length
-    ) {
+    if (recordingStatus == RECORDING_STATUS.ON) {
       ipcRenderer?.send(IPC_EVENTS.RECORDING_OFF);
       setRecordingStatus(RECORDING_STATUS.OFF);
-    } else if (
-      recordingStatus == RECORDING_STATUS.PAUSE &&
-      filteredActiveMeetings.length
-    ) {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_RESUME);
-      setRecordingStatus(RECORDING_STATUS.ON);
-    } else if (
-      recordingStatus == RECORDING_STATUS.PAUSE &&
-      !filteredActiveMeetings.length
-    ) {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_OFF);
-      setRecordingStatus(RECORDING_STATUS.OFF);
-    } else if (activeMeetingName) {
-      console.log("object");
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_ON, activeMeetingName);
+    } else if (recordingStatus == RECORDING_STATUS.OFF) {
+      ipcRenderer?.send(IPC_EVENTS.RECORDING_ON, meetingName);
       setRecordingStatus(RECORDING_STATUS.ON);
     }
   };
@@ -266,7 +214,7 @@ function Home() {
               </div>
             </div>
 
-            <CustomDropDown
+            <MicAndSpeakerDropDown
               prefixIcon={LuMic}
               options={micOptions}
               onChange={onChangeMic}
@@ -279,7 +227,7 @@ function Home() {
                 <p className="text-xs font-semibold">Speaker</p>
               </div>
             </div>
-            <CustomDropDown
+            <MicAndSpeakerDropDown
               prefixIcon={HiSpeakerWave}
               options={micOptions}
               onChange={onChangeMic}

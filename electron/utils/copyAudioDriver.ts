@@ -31,7 +31,7 @@ async function copyAudioDriver({
           cp -R "${sourceDir}" "${destDir}" && pkill coreaudiod 
         `;
 
-        sudo.exec(command, { name: "Romeano" }, (error, stdout, stderr) => {
+        sudo.exec(command, { name: "Romeano" }, (error) => {
           if (error) {
             //error can be ocurred if user does not enter password
             onAppQuite(app);

@@ -60,13 +60,16 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
       preload: path.join(__dirname, "preload.js"),
     },
   });
+
+  appWindow.webContents.openDevTools();
+
   // Test active push message to Renderer-process.
-  appWindow.webContents.on("did-finish-load", () => {
-    appWindow?.webContents.send(
-      "main-process-message",
-      new Date().toLocaleString()
-    );
-  });
+  // appWindow.webContents.on("did-finish-load", () => {
+  //   appWindow?.webContents.send(
+  //     "main-process-message",
+  //     new Date().toLocaleString()
+  //   );
+  // });
 
   if (VITE_DEV_SERVER_URL) {
     appWindow.loadURL(VITE_DEV_SERVER_URL);

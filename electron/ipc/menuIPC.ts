@@ -2,13 +2,16 @@ import { BrowserWindow, ipcMain, Menu, shell } from "electron";
 import Store from "electron-store";
 import { MenuChannels } from "../channels/menuChannels";
 import { IPC_EVENTS } from "../../src/lib/enums/ipc";
-import {
-  getCafAndOggFilePath,
-  onStopRecording,
-} from "../../src/utils/ipc/recording";
+
 import { IMeeting, ISelectTagOption } from "../../src/types/meeting";
 import path from "path";
 import schedule from "node-schedule";
+import {
+  getCafAndOggFileDir,
+  onStopRecording,
+  scheduleRecordingTask,
+  startRecordingOnAppOpen,
+} from "../utils/recording";
 
 const store = new Store();
 export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
@@ -82,7 +85,7 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
     mainWindow.setSize(420, 201);
   });
 
-  ipcMain.on(IPC_EVENTS.RESIZE_HOME_PAGE, (event, height) => {
+  ipcMain.on(IPC_EVENTS.RESIZE_HOME_PAGE, (_, height) => {
     mainWindow.setSize(420, height);
   });
 
@@ -90,32 +93,31 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
     event.returnValue = store.get(key);
   });
 
-  ipcMain.on(IPC_EVENTS.ELECTRON_STORE_SET, async (event, key, val) => {
+  ipcMain.on(IPC_EVENTS.ELECTRON_STORE_SET, async (_, key, val) => {
     store.set(key, val);
   });
 
-  ipcMain.on(IPC_EVENTS.ELECTRON_STORE_DELETE, async (event, key) => {
+  ipcMain.on(IPC_EVENTS.ELECTRON_STORE_DELETE, async (_, key) => {
     store.delete(key);
   });
 
   //IPC Event for recording
 
   // renderer to main
-  ipcMain.on(IPC_EVENTS.RECORDING_ON, async (event, fileName) => {
+  ipcMain.on(IPC_EVENTS.RECORDING_ON, async (_, fileName) => {
     await addonInstance.startAudioControl(0);
-    const filePath = getCafAndOggFilePath();
-    await addonInstance.startRecording(path.join(filePath, fileName));
-    // onStartRecording();
+    const fileDir = getCafAndOggFileDir();
+    await addonInstance.startRecording(path.join(fileDir, fileName));
   });
 
   ipcMain.on(IPC_EVENTS.RECORDING_PAUSE, async () => {
     addonInstance.pauseRecording();
-    // onStartRecording();
   });
+
   ipcMain.on(IPC_EVENTS.RECORDING_RESUME, async () => {
     addonInstance.resumeRecording();
-    // onStartRecording();
   });
+
   ipcMain.on(IPC_EVENTS.RECORDING_OFF, async (event) => {
     addonInstance.stopRecording();
     // addonInstance.stopAudioControl();
@@ -123,75 +125,21 @@ export const registerMenuIpc = (mainWindow: BrowserWindow, addonInstance) => {
     event.reply(IPC_EVENTS.UPLOAD_RECORDING, dataToSend);
   });
 
-  ipcMain.on(IPC_EVENTS.MIC_CHANGED, async (event, value) => {
+  ipcMain.on(IPC_EVENTS.MIC_CHANGED, async (_, value) => {
     console.log("Mic Changed", value);
   });
 
   ipcMain.on(
     IPC_EVENTS.SCHEDULE_RECORDING_TASK,
-    async (event, meetings: IMeeting[]) => {
-      const scheduledJobs = schedule.scheduledJobs;
-
-      meetings.forEach((meeting) => {
-        const scheduledMeeting = Object.keys(scheduledJobs).map((jobName) => {
-          return jobName;
-        });
-        const startTime = meeting.start;
-        const endTime = meeting.end;
-
-        const startJobName = `${meeting.id}-${meeting.start}`;
-        const endJobName = `${meeting.id}-${meeting.end}`;
-
-        const recordingFileName = `${meeting.summary}-recording.caf`;
-        if (!scheduledMeeting.includes(startJobName)) {
-          schedule.scheduleJob(
-            `${startJobName}start`,
-            startTime,
-            async function () {
-              await addonInstance.startAudioControl(0);
-              const filePath = getCafAndOggFilePath();
-              await addonInstance.startRecording(
-                path.join(filePath, recordingFileName)
-              );
-              mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_ON);
-            }
-          );
-        }
-        if (!scheduledMeeting.includes(endJobName)) {
-          schedule.scheduleJob(`${endJobName}end`, endTime, async function () {
-            addonInstance.stopRecording();
-            // addonInstance.stopAudioControl();
-            const dataToSend = await onStopRecording();
-            mainWindow.webContents.send(
-              IPC_EVENTS.AUTO_RECORDING_OFF,
-              dataToSend
-            );
-          });
-        }
-      });
+    async (_, upcomingMeetings: IMeeting[]) => {
+      scheduleRecordingTask({ addonInstance, mainWindow, upcomingMeetings });
     }
   );
 
   ipcMain.on(
-    IPC_EVENTS.RECORDING_ACTIVE_MEETING_ON_OPEN_APP,
-    async (event, activeMeeting: IMeeting) => {
-      const recordingFileName = `${activeMeeting.summary}-recording.caf`;
-      await addonInstance.startAudioControl(0);
-      const filePath = getCafAndOggFilePath();
-      await addonInstance.startRecording(
-        path.join(filePath, recordingFileName)
-      );
-      mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_ON);
-
-      const endTime = activeMeeting.end;
-      const endJobName = `${activeMeeting.id}-${activeMeeting.end}`;
-
-      schedule.scheduleJob(`${endJobName}end`, endTime, async function () {
-        addonInstance.stopRecording();
-        // addonInstance.stopAudioControl();
-        const dataToSend = await onStopRecording();
-        mainWindow.webContents.send(IPC_EVENTS.AUTO_RECORDING_OFF, dataToSend);
-      });
+    IPC_EVENTS.RECORD_ACTIVE_MEETING_ON_OPEN_APP,
+    async (_, activeMeeting: IMeeting) => {
+      startRecordingOnAppOpen({ activeMeeting, addonInstance, mainWindow });
     }
   );
 
