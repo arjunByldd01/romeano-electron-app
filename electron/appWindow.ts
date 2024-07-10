@@ -1,11 +1,4 @@
-import {
-  type App,
-  BrowserWindow,
-  Tray,
-  nativeImage,
-  Menu,
-  app,
-} from "electron";
+import { type App, BrowserWindow, Tray, nativeImage, Menu } from "electron";
 import windowStateKeeper from "electron-window-state";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,9 +8,11 @@ import { getcontextMenu } from "./menu/contextMenu";
 import { registerMenuIpc } from "./ipc/menuIPC";
 import { registerWindowStateChangedEvents } from "./windowState";
 import { createRequire } from "node:module";
-
+import { copyAudioDriver } from "./utils/copyAudioDriver";
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import Store from "electron-store";
+import { ELECTRON_STORE_KEY } from "../src/lib/enums/user";
 
 let appWindow: BrowserWindow | null;
 let tray: Tray;
@@ -39,6 +34,7 @@ const minHeight = 456;
 const maxHeight = 510;
 
 export function createWindow({ app }: { app: App }): BrowserWindow {
+  const store = new Store();
   const savedWindowState = windowStateKeeper({
     defaultWidth: minWidth,
     defaultHeight: minHeight,
@@ -64,14 +60,16 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  // Test active push message to Renderer-process.
-  appWindow.webContents.on("did-finish-load", () => {
-    appWindow?.webContents.send(
-      "main-process-message",
-      new Date().toLocaleString()
-    );
-  });
+
   appWindow.webContents.openDevTools();
+
+  // Test active push message to Renderer-process.
+  // appWindow.webContents.on("did-finish-load", () => {
+  //   appWindow?.webContents.send(
+  //     "main-process-message",
+  //     new Date().toLocaleString()
+  //   );
+  // });
 
   if (VITE_DEV_SERVER_URL) {
     appWindow.loadURL(VITE_DEV_SERVER_URL);
@@ -86,24 +84,22 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
   initializeTray(app);
 
   appWindow.webContents.once("dom-ready", () => {
-    // const RomeanoAddon = require(path.join(
-    //   __dirname,
-    //   "Release/romeanoaddon.node"
-    // )).RomeanoAddon;
-    // addonInstance = new RomeanoAddon();
     const RomeanoAddon = require("@romeano/romeano-audio-library/romeano-package");
     addonInstance = new RomeanoAddon();
-    addonInstance.startAudioControl(0);
+
     registerMainIPC();
   });
 
+  copyAudioDriver({
+    app,
+    userApiKey: store.get(ELECTRON_STORE_KEY.USER_API_KEY) as string,
+    onAppQuite,
+    appWindow,
+  });
   savedWindowState.manage(appWindow);
 
   appWindow.on("close", () => {
-    addonInstance.stopAudioControl();
-    appWindow = null;
-    app.quit();
-    tray.destroy();
+    onAppQuite(app);
   });
   return appWindow;
 }
@@ -137,6 +133,13 @@ function initializeTray(app: App) {
     tray.popUpContextMenu(contextMenu);
   });
   tray.setToolTip("Romeano");
+}
+
+function onAppQuite(app: App) {
+  addonInstance?.stopAudioControl();
+  appWindow = null;
+  app.quit();
+  tray.destroy();
 }
 
 // Toggle Window From Tray Icon

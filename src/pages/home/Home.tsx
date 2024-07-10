@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { HiSpeakerWave } from "react-icons/hi2";
 import { type IpcRenderer } from "electron";
 import { useMutation } from "@tanstack/react-query";
-import { CustomDropDown } from "../../components/common/DropDown";
+import { MicAndSpeakerDropDown } from "../../components/common/DropDown";
 import Toggle from "../../components/common/toggle";
 import { IApiError, handleApiError } from "../../utils/handleApiError";
 import Meetings from "../../components/homePage/Meetings";
@@ -29,6 +29,7 @@ import { useFetchMeetingsContext } from "../../context/fetchMeetingsContext";
 import { RECORDING_STATUS } from "../../lib/enums/meeting";
 import RecordingStatus from "../../components/homePage/RecordingStatus";
 import { useRecordingContext } from "../../context/recordingContext";
+import { acceptIpcEventFromMain } from "../../utils/ipc";
 
 const electron = window?.electron;
 const ipcRenderer: IpcRenderer = electron?.ipcRenderer;
@@ -40,6 +41,8 @@ function Home() {
     isFetched: isMeetingFetched,
     error: fetchMeetingError,
     showMeetingLoader,
+    refetchMeeting,
+    isRefetching: isRefetchingMeetings,
   } = useFetchMeetingsContext();
 
   const { recordingStatus, setRecordingStatus } = useRecordingContext();
@@ -70,27 +73,16 @@ function Home() {
   });
 
   useEffect(() => {
-    ipcRenderer?.on(
-      IPC_EVENTS.UPLOAD_RECORDING,
-      (event, data: IRecordingDataFromMain) => {
-        handleUploadRecording(data);
-      }
-    );
-
-    ipcRenderer?.on(
-      IPC_EVENTS.MIC_OPTIONS_FROM_MAIN,
-      (event, data: ISelectTagOption[]) => {
-        setMicOptions(data);
-      }
-    );
+    acceptIpcEventFromMain({
+      handleUploadRecording,
+      refetchMeeting,
+      setMicOptions,
+      setRecordingStatus,
+    });
 
     if (!userAPIKey) {
       navigate("/setup");
     }
-    return () => {
-      ipcRenderer?.removeAllListeners(IPC_EVENTS.UPLOAD_RECORDING);
-      ipcRenderer?.removeAllListeners(IPC_EVENTS.MIC_OPTIONS_FROM_MAIN);
-    };
   }, []);
 
   const {
@@ -101,8 +93,14 @@ function Home() {
     return getFilteredMeetings({
       userMeetings: userMeetings?.events,
       fetchMeetingError: fetchMeetingError as IApiError,
+      recordingStatus,
     });
-  }, [isMeetingFetched, userMeetings?.events, fetchMeetingError]);
+  }, [
+    isMeetingFetched,
+    userMeetings?.events,
+    fetchMeetingError,
+    isRefetchingMeetings,
+  ]);
 
   useEffect(() => {
     let pageHeight = pageRef.current?.getBoundingClientRect()?.height;
@@ -126,35 +124,16 @@ function Home() {
   };
 
   const toggleRecording = () => {
-    if (
-      recordingStatus == RECORDING_STATUS.ON &&
-      filteredActiveMeetings.length
-    ) {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_PAUSE);
-      setRecordingStatus(RECORDING_STATUS.PAUSE);
+    const meetingName =
+      filteredActiveMeetings.length > 0
+        ? `${filteredActiveMeetings[0].summary}-${Date.now()}.caf`
+        : `romeano-recording-${Date.now()}.caf`;
 
-      // ipcRenderer?.send(IPC_EVENTS.RECORDING_OFF);
-      // setRecordingStatus(RECORDING_STATUS.OFF);
-    } else if (
-      recordingStatus == RECORDING_STATUS.ON &&
-      !filteredActiveMeetings.length
-    ) {
+    if (recordingStatus == RECORDING_STATUS.ON) {
       ipcRenderer?.send(IPC_EVENTS.RECORDING_OFF);
       setRecordingStatus(RECORDING_STATUS.OFF);
-    } else if (
-      recordingStatus == RECORDING_STATUS.PAUSE &&
-      filteredActiveMeetings.length
-    ) {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_RESUME);
-      setRecordingStatus(RECORDING_STATUS.ON);
-    } else if (
-      recordingStatus == RECORDING_STATUS.PAUSE &&
-      !filteredActiveMeetings.length
-    ) {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_OFF);
-      setRecordingStatus(RECORDING_STATUS.OFF);
-    } else {
-      ipcRenderer?.send(IPC_EVENTS.RECORDING_ON);
+    } else if (recordingStatus == RECORDING_STATUS.OFF) {
+      ipcRenderer?.send(IPC_EVENTS.RECORDING_ON, meetingName);
       setRecordingStatus(RECORDING_STATUS.ON);
     }
   };
@@ -235,7 +214,7 @@ function Home() {
               </div>
             </div>
 
-            <CustomDropDown
+            <MicAndSpeakerDropDown
               prefixIcon={LuMic}
               options={micOptions}
               onChange={onChangeMic}
@@ -248,7 +227,7 @@ function Home() {
                 <p className="text-xs font-semibold">Speaker</p>
               </div>
             </div>
-            <CustomDropDown
+            <MicAndSpeakerDropDown
               prefixIcon={HiSpeakerWave}
               options={micOptions}
               onChange={onChangeMic}

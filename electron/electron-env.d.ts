@@ -28,6 +28,5 @@ interface Window {
     store: IElectronStore;
     ipcRenderer: IpcRenderer;
     shell: Shell;
-    envConfig: IEnvConfig;
   };
 }

@@ -6,7 +6,6 @@ import {
 } from "electron";
 import { IPC_EVENTS } from "../src/lib/enums/ipc";
 // import { IPC_EVENTS } from "./ui/lib/enums/ipc";
-// import { envConfig } from "../config/env.config";
 
 const versions: Record<string, unknown> = {};
 
@@ -98,10 +97,6 @@ export const globals = {
       ipcRenderer.send(IPC_EVENTS.ELECTRON_STORE_DELETE, key);
     },
   },
-
-  // envConfig: {
-  //   ROMEANO_API_BASE_URL: envConfig.ROMEANO_API_BASE_URL,
-  // },
 };
 
 /** Create a safe, bidirectional, synchronous bridge across isolated contexts

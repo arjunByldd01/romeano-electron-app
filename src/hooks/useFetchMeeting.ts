@@ -19,7 +19,7 @@ export const useFetchMeetings = ({
         setShowMeetingLoader,
         setSpinTheRefetchIcon,
       }),
-    // refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false,
     retry: false,
   });
 };
