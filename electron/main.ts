@@ -1,10 +1,11 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog, MessageBoxOptions } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { createWindow } from "./appWindow";
 import installExtension, {
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
+import { autoUpdater } from "electron-updater";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -57,4 +58,34 @@ app.whenReady().then(() => {
       appWindow = createWindow({ app });
     })
     .catch((err) => console.info("An error occurred: ", err));
+});
+
+autoUpdater.on("update-available", () => {
+  dialog.showMessageBox({
+    type: "info",
+    title: "Update Available",
+    message:
+      "A new update is available. It will be downloaded in the background.",
+    buttons: ["OK"],
+  });
+});
+
+autoUpdater.on("update-downloaded", (info) => {
+  const dialogOpts: MessageBoxOptions = {
+    type: "info",
+    buttons: ["Restart", "Later"],
+    title: "Update Downloaded",
+    message: "Update Downloaded",
+    detail:
+      "A new version has been downloaded. Restart the application to apply the updates.",
+  };
+
+  dialog.showMessageBox(dialogOpts).then((returnValue) => {
+    if (returnValue.response === 0) autoUpdater.quitAndInstall();
+  });
+});
+
+// app.whenReady().then(createWindow);
+app.on("ready", () => {
+  autoUpdater.checkForUpdatesAndNotify();
 });

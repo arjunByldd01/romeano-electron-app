@@ -61,8 +61,6 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
     },
   });
 
-  appWindow.webContents.openDevTools();
-
   // Test active push message to Renderer-process.
   // appWindow.webContents.on("did-finish-load", () => {
   //   appWindow?.webContents.send(
@@ -96,6 +94,7 @@ export function createWindow({ app }: { app: App }): BrowserWindow {
     onAppQuite,
     appWindow,
   });
+
   savedWindowState.manage(appWindow);
 
   appWindow.on("close", () => {
