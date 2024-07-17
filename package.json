@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "postinstall": "sh ./postinstall",
     "make": "vite build && electron-builder -- --mac --universal",
-    "publish": "vite build && electron-builder -p always"
+    "publish": "vite build && electron-builder --mac -p always"
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
