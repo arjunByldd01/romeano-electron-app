@@ -16,6 +16,10 @@ release
 /Release
 /out
 
+
+# dotenv environment variables file
+.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
