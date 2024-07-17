@@ -29,18 +29,8 @@ export default {
 - Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
 - Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
 
-  "postbuild": "cp -r ./Release/RomeanoAudioControl.framework ./node_modules/electron/dist/Electron.app/Contents/Frameworks/ && cp-r Release/romeanoaddon.node ./dist-electron/Release/"
-  Resources/app.asar/Release/romeanoaddon.node
+Generate a GitHub access token by going to https://github.com/settings/tokens/new. The access token should have the repo scope/permission. Once you have the token, assign it to an environment variable
 
-// "extraFiles": [
-// {
-// "from": "Release/RomeanoAudioControl.framework",
-// "to": "Resources",
-// "filter": ["**/*"]
-// },
-// {
-// "from": "Release/RomeanoAudioControl.framework/romeanoaddon.node",
-// "to": "Resources",
-// "filter": ["**/*"]
-// }
-// ],
+On macOS/linux:
+
+export GH_TOKEN="<YOUR_TOKEN_HERE>"
