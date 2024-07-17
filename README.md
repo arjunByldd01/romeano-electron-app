@@ -33,4 +33,13 @@ Generate a GitHub access token by going to https://github.com/settings/tokens/ne
 
 On macOS/linux:
 
-export GH_TOKEN="<YOUR_TOKEN_HERE>"
+Publish App
+
+1. Update version in package json
+
+2. set GH_TOKEN
+   export GH_TOKEN="<YOUR_TOKEN_HERE>"
+
+3. run - npm run publish
+
+4. Release the release on GitHub by going to https://github.com/YOUR_GIT_HUB_USERNAME/electron-updater-example/releases, editing the release and clicking "Publish release."
