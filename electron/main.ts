@@ -95,21 +95,20 @@ autoUpdater.on("error", () => {
     buttons: ["OK"],
   });
 });
-
-autoUpdater.on("download-progress", (progressObj) => {
-  let log_message = "Download speed: " + progressObj.bytesPerSecond;
-  log_message = log_message + " - Downloaded " + progressObj.percent + "%";
-  log_message =
-    log_message +
-    " (" +
-    progressObj.transferred +
-    "/" +
-    progressObj.total +
-    ")";
+autoUpdater.on("update-cancelled", () => {
   dialog.showMessageBox({
     type: "info",
-    title: "Error",
-    message: log_message,
+    title: "Update cancelled",
+    message: "Cancelled",
+    buttons: ["OK"],
+  });
+});
+
+autoUpdater.on("download-progress", (progressObj) => {
+  dialog.showMessageBox({
+    type: "info",
+    title: "Update progress",
+    message: "In progress",
     buttons: ["OK"],
   });
 });
