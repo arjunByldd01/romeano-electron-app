@@ -9,6 +9,10 @@ import { autoUpdater } from "electron-updater";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const server = "https://update.electronjs.org";
+const feed = `${server}/arjunByldd01/romeano-electron-app/${process.platform}-${
+  process.arch
+}/${app.getVersion()}`;
 // The built directory structure
 //
 // ├─┬─┬ dist
@@ -104,14 +108,6 @@ autoUpdater.on("update-cancelled", () => {
   });
 });
 
-autoUpdater.on("download-progress", (progressObj) => {
-  dialog.showMessageBox({
-    type: "info",
-    title: "Update progress",
-    message: "In progress",
-    buttons: ["OK"],
-  });
-});
 // app.whenReady().then(createWindow);
 app.on("ready", () => {
   // autoUpdater.checkForUpdatesAndNotify();
