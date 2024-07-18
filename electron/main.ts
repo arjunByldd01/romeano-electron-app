@@ -31,7 +31,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let appWindow: BrowserWindow | null;
 
-autoUpdater.autoDownload = false;
+autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
