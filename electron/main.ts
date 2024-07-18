@@ -31,6 +31,8 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let appWindow: BrowserWindow | null;
 
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -85,7 +87,34 @@ autoUpdater.on("update-downloaded", (info) => {
   });
 });
 
+autoUpdater.on("error", () => {
+  dialog.showMessageBox({
+    type: "info",
+    title: "Error",
+    message: "Error in update",
+    buttons: ["OK"],
+  });
+});
+
+autoUpdater.on("download-progress", (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + " - Downloaded " + progressObj.percent + "%";
+  log_message =
+    log_message +
+    " (" +
+    progressObj.transferred +
+    "/" +
+    progressObj.total +
+    ")";
+  dialog.showMessageBox({
+    type: "info",
+    title: "Error",
+    message: log_message,
+    buttons: ["OK"],
+  });
+});
 // app.whenReady().then(createWindow);
 app.on("ready", () => {
+  // autoUpdater.checkForUpdatesAndNotify();
   autoUpdater.checkForUpdatesAndNotify();
 });
