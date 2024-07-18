@@ -33,7 +33,7 @@ const Layout = ({ children }: ChildProps) => {
     <>
       <div className="bg-white px-5 py-1 h-[53px] font-sans flex justify-between items-center text-black">
         <div>
-          <h1 className=" text-lg font-semibold ">romeano</h1>
+          <h1 className=" text-lg font-semibold ">romeanoo</h1>
         </div>
         <div>
           <div className="flex gap-4 items-center ">
