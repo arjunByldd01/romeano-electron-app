@@ -87,11 +87,11 @@ autoUpdater.on("update-downloaded", (info) => {
   });
 });
 
-autoUpdater.on("error", () => {
+autoUpdater.on("error", (error) => {
   dialog.showMessageBox({
     type: "info",
     title: "Error",
-    message: "Error in update",
+    message: `Error in update ${error}`,
     buttons: ["OK"],
   });
 });
