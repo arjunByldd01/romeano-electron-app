@@ -43,9 +43,9 @@ async function copyAudioDriver({
            * and if there is an active meeting available at that moment we have to refetch meetings.
            * And then, audioDriver will also available and it start recording automatically for that active meeting
            */
-          if (userApiKey) {
-            appWindow.webContents.send(IPC_EVENTS.AUDIO_DROVER_COPY);
-          }
+          // if (userApiKey) {
+          //   appWindow.webContents.send(IPC_EVENTS.AUDIO_DROVER_COPY);
+          // }
         });
       });
   } catch (err) {

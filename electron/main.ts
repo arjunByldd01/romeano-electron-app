@@ -60,7 +60,7 @@ app.on("activate", () => {
 app.whenReady().then(() => {
   installExtension(REACT_DEVELOPER_TOOLS)
     .then((name) => {
-      console.info(`Added Extension:  ${name}`);
+      // console.info(`Added Extension:  ${name}`);
       appWindow = createWindow({ app });
     })
     .catch((err) => console.info("An error occurred: ", err));

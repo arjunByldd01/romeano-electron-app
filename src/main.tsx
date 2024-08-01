@@ -10,6 +10,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 
 // Use contextBridge
-window.electron.ipcRenderer.on("main-process-message", (_event, message) => {
-  console.log(message);
-});
+// window.electron.ipcRenderer.on("main-process-message", (_event, message) => {
+//   // console.log(message);
+// });

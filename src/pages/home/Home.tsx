@@ -29,7 +29,10 @@ import { useFetchMeetingsContext } from "../../context/fetchMeetingsContext";
 import { RECORDING_STATUS } from "../../lib/enums/meeting";
 import RecordingStatus from "../../components/homePage/RecordingStatus";
 import { useRecordingContext } from "../../context/recordingContext";
-import { acceptIpcEventFromMain } from "../../utils/ipc";
+import {
+  acceptIpcEventFromMain,
+  deleteIpcEventReceivingFromMain,
+} from "../../utils/ipc";
 
 const electron = window?.electron;
 const ipcRenderer: IpcRenderer = electron?.ipcRenderer;
@@ -46,7 +49,6 @@ function Home() {
   } = useFetchMeetingsContext();
 
   const { recordingStatus, setRecordingStatus } = useRecordingContext();
-  // const [, setRecordingStatus] = useState<string>(RECORDING_STATUS.OFF);
 
   const [micOptions, setMicOptions] = useState<ISelectTagOption[]>([
     {
@@ -83,6 +85,9 @@ function Home() {
     if (!userAPIKey) {
       navigate("/setup");
     }
+    return () => {
+      deleteIpcEventReceivingFromMain();
+    };
   }, []);
 
   const {

@@ -49,4 +49,16 @@ const acceptIpcEventFromMain = ({
   });
 };
 
-export { acceptIpcEventFromMain };
+const deleteIpcEventReceivingFromMain = () => {
+  ipcRenderer?.removeAllListeners(IPC_EVENTS.UPLOAD_RECORDING);
+
+  ipcRenderer?.removeAllListeners(IPC_EVENTS.MIC_OPTIONS_FROM_MAIN);
+
+  ipcRenderer?.removeAllListeners(IPC_EVENTS.AUTO_RECORDING_ON);
+
+  ipcRenderer?.removeAllListeners(IPC_EVENTS.AUTO_RECORDING_OFF);
+
+  ipcRenderer?.removeAllListeners(IPC_EVENTS.AUDIO_DROVER_COPY);
+};
+
+export { acceptIpcEventFromMain, deleteIpcEventReceivingFromMain };
